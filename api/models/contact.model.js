@@ -5,7 +5,9 @@ module.exports = (sequelize, Sequelize) => {
             autoIncrement: true,
             primaryKey: true,
         },
-        // DEFINE YOUR MODEL HERE
+        name: {
+            type: Sequelize.STRING
+        }  
     });
   
     return Contact;

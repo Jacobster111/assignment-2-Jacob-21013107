@@ -7,3 +7,5 @@ const Op = db.Sequelize.Op;
 exports.calculate = (req, res) => {
     
 };
+
+// No
