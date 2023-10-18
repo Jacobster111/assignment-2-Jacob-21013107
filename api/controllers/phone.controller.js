@@ -9,7 +9,15 @@ exports.create = (req, res) => {
 
 // Get all phones
 exports.findAll = (req, res) => {
-    
+    Phones.findAll()
+        .then(data => {
+            res.send(data);
+        })
+        .catch(err => {
+            res.status(500).send({
+                message: err.message || "Some error occurred"
+            });
+        });
 };
 
 // Get one phone by id
