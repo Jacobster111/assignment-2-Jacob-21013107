@@ -36,36 +36,43 @@ function App() {
         }
     };
 
-    // Delete Contacts
-    const deleteContact = (id) => {
-        fetch(`http://localhost/api/contacts/${id}`, {
-            method: 'DELETE'
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log(data.message); // Trobleshooting
-        })
-        .catch(error => console.error('Error:', error));
+    const deleteContact = async (contactId) => {
+        console.log(`Attempting to delete contact with ID: ${contactId}`);
+        
+        try {
+            const response = await fetch(`http://localhost/api/contacts/${contactId}`, {
+                method: 'DELETE'
+            });
+    
+            if (!response.ok) {
+                console.error(`Error deleting contact. Status: ${response.status}`);
+                return;
+            }
+    
+            const newContactList = contacts.filter(contact => contact.id !== contactId);
+            console.log(`Contact with ID ${contactId} successfully deleted.`);
+            setContacts(newContactList);
+        } catch (error) {
+            console.error('Error:', error);
+        }
     };
     
 
-
     return (
         <div>
-            <h1>Contact List</h1>
-            <br/>
-            <input type="text" value={newContact} onChange={(e) => setNewContact(e.target.value)}/>
-            <input type="button" value="Add Contact" onClick={handleAddContact}/>
-            <br/><br/>
-            <div>
+        <h1>Contact List</h1>
+        <br/>
+        <input type="text" value={newContact} onChange={(e) => setNewContact(e.target.value)}/>
+        <input type="button" value="Add Contact" onClick={handleAddContact}/>
+        <br/><br/>
+        <div>
             {contacts.map((contact) => (
-                <div key={contact.id}>
-                {contact.name}
-                <input type="button" value="Delete Contact" onClick={() => deleteContact(contact.id)}/>
+            <div key={contact.id}>{contact.name}
+            <input type="button" value="Delete Contact" onClick={() => deleteContact(contact.id)}/>
             </div>
             ))}
         </div>
-        </div>
+    </div>
     );
 }
 

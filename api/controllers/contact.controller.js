@@ -45,25 +45,20 @@ exports.update = (req, res) => {
 
 // Delete one contact by id
 exports.delete = (req, res) => {
-    const id = req.params.id;
-
-    Contacts.destroy({
-        where: { id: id }
-    })
-    .then(num => {
-        if (num == 1) {
-            res.send({
-                message: "Contact was deleted successfully!"
-            });
-        } else {
-            res.send({
-                message: `Cannot delete Contact with id=${id}. Maybe the Contact was not found!`
-            });
-        }
-    })
-    .catch(err => {
-        res.status(500).send({
-            message: `Could not delete Contact with id=${id}`
+    const { contactId } = req.params;
+    Contacts.findByPk(contactId)
+        .then(contact => {
+            if (!contact) {
+                return res.status(404).json({ message: "Contact couldn't be hunted down" });
+            } 
+            
+        contact.destroy()
+        .then(() => {
+            res.json({});
+        })
+        .catch(err => {
+            res.status(500).json({ message: "Error, contact has survived erasure" });
         });
-    });
+            
+        })        
 };
