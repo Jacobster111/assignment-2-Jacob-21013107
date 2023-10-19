@@ -9,9 +9,11 @@ module.exports = (sequelize, Sequelize) => {
             type: Sequelize.STRING
         },
         number: {
-            type: Sequelize.INTEGER
+            type: Sequelize.STRING
         }
     });
+
+    Phone.belongsTo(sequelize.models.contact);
   
     return Phone;
 };

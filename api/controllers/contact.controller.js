@@ -35,12 +35,38 @@ exports.findAll = (req, res) => {
 
 // Get one contact by id
 exports.findOne = (req, res) => {
-  
+    const { contactId } = req.params;
+    Contacts.findByPk(contactId)
+        .then (contact => {
+            if (!contact) {
+                res.status(404).json({ message: 'Contact does not exist, check your spelling' });
+            } else {
+                res.status(200).json(contact);
+            }
+        })
+        .catch(err => {
+            res.status(500).json({ message: 'Contact could not be retrieved.'})
+        })
 };
 
 // Update one contact by id
 exports.update = (req, res) => {
-    
+    const { contactId } = req.params;
+    const { name } = req.body;
+    Contacts.findByPk(contactId)
+        .then(contact => {
+            if (!contact) {
+                res.status(404).json({ message: 'Contact is in another castle' });
+            } else {
+                return contact.update({ name });
+            }
+        })
+        .then(updatedContact => {
+            res.status(200).json(updatedContact);
+        })
+        .catch(err => {
+            res.status(500).json({ message: 'Contact refuses to be updated' });
+        })
 };
 
 // Delete one contact by id
@@ -60,5 +86,5 @@ exports.delete = (req, res) => {
             res.status(500).json({ message: "Error, contact has survived erasure" });
         });
             
-        })        
+        })   
 };
