@@ -1,26 +1,39 @@
-import { useState, useEffect, useCallback } from 'react';  // import useEffect
+import { useState, useEffect } from 'react';  // import useEffect
 import './App.css';
 
 function App() {
     // Define state for the list of contacts
     const [contacts, setContacts] = useState([]);
     const [newContact, setNewContact] = useState('');
-    const [phoneDetails, setPhoneDetails] = useState([]);
     const [newPhoneType, setNewPhoneType] = useState('');
     const [newPhoneNumber, setNewPhoneNumber] = useState('');
 
-    // Allows for contacts to stay upon refreshing
+    // Allows for everything to stay when refreshed
     useEffect(() => {
         fetch('http://localhost/api/contacts')
             .then(response => response.json())
             .then(data => {
-                setContacts(data);
+                const fetchPhones = data.map(contact => {
+                    return fetch(`http://localhost/api/contacts/${contact.id}/phones`)
+                        .then(response => response.json());
+                });
+    
+                Promise.all(fetchPhones)
+                    .then(phoneData => {
+                        const updatedContacts = data.map((contact, index) => {
+                            return {
+                                ...contact,
+                                phones: phoneData[index]
+                            };
+                        });
+    
+                        setContacts(updatedContacts);
+                    })
+                    .catch(error => console.error('Error fetching phones:', error));
             })
             .catch(error => console.error('Error:', error));
     }, []);
-
-    // Allows for phones to stay upon refreshing
-  
+ 
     
     // Function to handle adding a contact
     const handleAddContact = () => {
@@ -63,6 +76,7 @@ function App() {
         }
     };
 
+    // Adding Phones
     const handleAddPhone = (contactId) => {
         if (newPhoneType.trim() !== '' && newPhoneNumber.trim() !== '') {
             fetch(`http://localhost/api/contacts/${contactId}/phones`, {
@@ -74,7 +88,6 @@ function App() {
             })
             .then(response => response.json())
             .then(data => {
-                // Update the contacts state to reflect the new phone details
                 setContacts(prevContacts => prevContacts.map(contact => {
                     if (contact.id === contactId) {
                         return {
@@ -84,7 +97,6 @@ function App() {
                     }
                     return contact;
                 }));
-                // Reset the phone type and number input fields
                 setNewPhoneType('');
                 setNewPhoneNumber('');
             })
@@ -101,7 +113,6 @@ function App() {
         })
         .then(response => response.json())
         .then(data => {
-            // Update the contacts state to remove the deleted phone
             setContacts(prevContacts => prevContacts.map(contact => {
                 if (contact.id === contactId) {
                     return {
@@ -117,33 +128,33 @@ function App() {
     
 
     return (
-        <div>
-            <h1>Contact List</h1>
-            <br/>
-            <input type="text" value={newContact} onChange={(e) => setNewContact(e.target.value)}/>
-            <input type="button" value="Add Contact" onClick={handleAddContact}/>
-            <br/><br/>
-            <div>
-                {contacts.map((contact) => (
-                    <div key={contact.id}>
-                        {contact.name}
-                        <input type="button" value="Delete Contact" onClick={() => deleteContact(contact.id)}/>
-                        <div>
-                            <input type="text" placeholder="Phone Type" value={newPhoneType} onChange={(e) => setNewPhoneType(e.target.value)}/>
-                            <input type="text" placeholder="Phone Number" value={newPhoneNumber} onChange={(e) => setNewPhoneNumber(e.target.value)}/>
-                            <input type="button" value="Add Phone" onClick={() => handleAddPhone(contact.id)}/>
-                            {contact.phones && contact.phones.map(phone => (
-                                <div key={phone.id}>
-                                    {phone.type}: {phone.number}
-                                    <input type="button" value='Delete Phone' onClick={() => handleDeletePhone(contact.id, phone.id)}/>
-                                </div>
-                            ))}
-                        </div>
+        <div className="contact-list">
+          <h1>Contact List</h1>
+          <br/>
+          <input type="text" value={newContact} onChange={(e) => setNewContact(e.target.value)}/>
+          <input type="button" id='add-contact-button' value="Add Contact" onClick={handleAddContact}/>
+          <br/><br/>
+          <div className="contact-container">
+            {contacts.map((contact) => (
+              <div key={contact.id} className="contact-item">
+                {contact.name}
+                <input type="button" id='delete-contact-button' value="Delete Contact" onClick={() => deleteContact(contact.id)}/>
+                <div className="phone-container">
+                  <input type="text" placeholder="Phone Type" value={newPhoneType} onChange={(e) => setNewPhoneType(e.target.value)}/>
+                  <input type="text" placeholder="Phone Number" value={newPhoneNumber} onChange={(e) => setNewPhoneNumber(e.target.value)}/>
+                  <input type="button" id='add-phone-button' value="Add Phone" onClick={() => handleAddPhone(contact.id)}/>
+                  {contact.phones && contact.phones.map(phone => (
+                    <div key={phone.id} className="phone-item">
+                      {phone.type}: {phone.number}
+                      <input type="button" id='delete-phone-button' value='Delete Phone' onClick={() => handleDeletePhone(contact.id, phone.id)}/>
                     </div>
-                ))}
-            </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-    );
+      );
 }
 
 export default App;

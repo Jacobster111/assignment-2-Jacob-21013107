@@ -47,14 +47,41 @@ exports.findAll = (req, res) => {
         });
 };
 
-// Get one phone by id
+
+// Get one phone by phone id
 exports.findOne = (req, res) => {
-  
+    const { phoneId } = req.params;
+    Contacts.findByPk(phoneId)
+        .then (phone => {
+            if (!phone) {
+                res.status(404).json({ message: 'Phone does not exist, check your spelling' });
+            } else {
+                res.status(200).json(phone);
+            }
+        })
+        .catch(err => {
+            res.status(500).json({ message: 'Phone could not be retrieved.'})
+        })
 };
 
-// Update one phone by id
+// Update one phone by phone id
 exports.update = (req, res) => {
-    
+    const { phoneId } = req.params;
+    const { type, number } = req.body;
+    Contacts.findByPk(phoneId)
+        .then(phone => {
+            if (!phone) {
+                res.status(404).json({ message: 'Phone is in another castle' });
+            } else {
+                return contact.update({ type, number });
+            }
+        })
+        .then(updatedPhone => {
+            res.status(200).json(updatedPhone);
+        })
+        .catch(err => {
+            res.status(500).json({ message: 'Phone refuses to be updated' });
+        })
 };
 
 // Delete one phone by id
